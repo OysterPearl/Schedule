@@ -1,0 +1,1 @@
+id PRIMARY KEY, date TIMESTAMP, title TEXT, location TEXT, start_time TIMESTAMP, end_time TIMESTAMP, created_at TIMESTAMP, updated_at TIMESTAMP, remark TEXT
