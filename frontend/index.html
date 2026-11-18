@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agenda · 周视图</title>
+  <title>Agenda · 日程表</title>
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
@@ -18,19 +18,50 @@
     }
   </script>
 
-  <main class="calendar">
-    <div class="calendar-card">
-      <div class="calendar-scroll" id="calendar-scroll">
-        <!-- 顶部：左上是月份，其余是周日～周六（JS 生成） -->
-        <div class="cal-header" id="cal-header">
-          <div class="corner" id="corner"></div>
+  <main class="app">
+    <!-- 月视图 -->
+    <section id="month-view" class="view">
+      <div class="card">
+        <div class="month-topbar">
+          <button id="prev-month" class="icon-btn" type="button" aria-label="上个月">‹</button>
+          <h1 class="month-title" id="month-title"></h1>
+          <button id="next-month" class="icon-btn" type="button" aria-label="下个月">›</button>
         </div>
-        <!-- 主体：最左时间轴 + 7 个日列（JS 生成 24h × 每 5min 的网格） -->
-        <div class="cal-body" id="cal-body">
-          <div class="time-gutter" id="time-gutter"></div>
+
+        <div class="month-weekdays">
+          <span>周日</span>
+          <span>周一</span>
+          <span>周二</span>
+          <span>周三</span>
+          <span>周四</span>
+          <span>周五</span>
+          <span>周六</span>
+        </div>
+
+        <div class="month-grid" id="month-grid"></div>
+
+        <p class="month-hint">点击任意一周，查看该周的详细日程</p>
+      </div>
+    </section>
+
+    <!-- 周视图 -->
+    <section id="week-view" class="view" hidden>
+      <div class="week-toolbar">
+        <button id="back-to-month" class="pill-btn" type="button">‹ 月视图</button>
+        <span class="week-range" id="week-range"></span>
+      </div>
+
+      <div class="card">
+        <div class="calendar-scroll" id="calendar-scroll">
+          <div class="cal-header" id="cal-header">
+            <div class="corner" id="corner"></div>
+          </div>
+          <div class="cal-body" id="cal-body">
+            <div class="time-gutter" id="time-gutter"></div>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   </main>
 
   <div class="status" id="status" hidden></div>

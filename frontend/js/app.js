@@ -1,16 +1,23 @@
 const API_BASE = "/api";
 const WEEKDAYS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
 
-const CELL_MINUTES = 5;                            // 底层每格 5 分钟
+const CELL_MINUTES = 5;                            // 周视图底层每格 5 分钟
 const SLOTS_PER_HOUR = 60 / CELL_MINUTES;          // 每小时 12 格
 const CELL_HEIGHT = 6;                             // 每格高度（与 CSS 中 --cell-h 保持一致）
 const HOUR_HEIGHT = CELL_HEIGHT * SLOTS_PER_HOUR;  // 每小时高度
 const TOTAL_SLOTS = 24 * SLOTS_PER_HOUR;           // 全天 288 格
 const DAY_MINUTES = 24 * 60;
 
-// 周次暂时固定显示 2026-11-15（周日）～ 2026-11-21（周六），
-// 列顺序固定为 周日 → 周六（15 号是周日，逐列 +1 天）。
-const WEEK_START = new Date(2026, 10, 15);
+// ---------------- DOM ----------------
+
+const monthViewEl = document.getElementById("month-view");
+const weekViewEl = document.getElementById("week-view");
+const monthTitleEl = document.getElementById("month-title");
+const monthGridEl = document.getElementById("month-grid");
+const prevMonthBtn = document.getElementById("prev-month");
+const nextMonthBtn = document.getElementById("next-month");
+const backBtn = document.getElementById("back-to-month");
+const weekRangeEl = document.getElementById("week-range");
 
 const scrollEl = document.getElementById("calendar-scroll");
 const headerEl = document.getElementById("cal-header");
@@ -19,16 +26,35 @@ const cornerEl = document.getElementById("corner");
 const gutterEl = document.getElementById("time-gutter");
 const statusEl = document.getElementById("status");
 
+// ---------------- 状态 ----------------
+
+const today = new Date();
+let viewMonth = new Date(today.getFullYear(), today.getMonth(), 1); // 月视图当前页
+let events = [];
+
+// ---------------- 通用工具 ----------------
+
 const pad2 = (n) => String(n).padStart(2, "0");
 
 function dateKey(d) {
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 }
 
+// 以周日为一周起点
+function startOfWeek(d) {
+  const copy = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  copy.setDate(copy.getDate() - copy.getDay());
+  return copy;
+}
+
 function addDays(d, n) {
   const copy = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   copy.setDate(copy.getDate() + n);
   return copy;
+}
+
+function weekDayKeys(weekStart) {
+  return Array.from({ length: 7 }, (_, i) => dateKey(addDays(weekStart, i)));
 }
 
 function escapeHtml(text) {
@@ -63,10 +89,82 @@ function showStatus(message) {
   statusEl.hidden = false;
 }
 
-// ---------------- 渲染 ----------------
+// ---------------- 月视图 ----------------
 
-function renderHeader(weekStart) {
-  const todayKey = dateKey(new Date());
+function buildMonthGrid() {
+  const year = viewMonth.getFullYear();
+  const month = viewMonth.getMonth();
+
+  monthTitleEl.textContent = `${year}年${month + 1}月`;
+
+  const firstDay = new Date(year, month, 1);
+  const gridStart = startOfWeek(firstDay);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const weeks = Math.ceil((firstDay.getDay() + daysInMonth) / 7);
+
+  // 每天日程数量（用于红点，最多展示 3 个）
+  const counts = new Map();
+  for (const event of events) {
+    const key = String(event.date ?? "").slice(0, 10);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+
+  const todayKey = dateKey(today);
+  monthGridEl.innerHTML = "";
+
+  for (let w = 0; w < weeks; w++) {
+    const weekStart = addDays(gridStart, w * 7);
+    const row = document.createElement("div");
+    row.className = "month-week";
+    row.tabIndex = 0;
+    row.title = "查看这一周的日程";
+    row.addEventListener("click", () => openWeek(weekStart));
+    row.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        openWeek(weekStart);
+      }
+    });
+
+    for (let d = 0; d < 7; d++) {
+      const day = addDays(weekStart, d);
+      const key = dateKey(day);
+      const cell = document.createElement("div");
+      cell.className = "month-day";
+
+      if (day.getMonth() !== month) cell.classList.add("is-outside");
+      if (key === todayKey) cell.classList.add("is-today");
+
+      const dotCount = Math.min(counts.get(key) ?? 0, 3);
+      const dots = '<span class="dot"></span>'.repeat(dotCount);
+
+      cell.innerHTML = `
+        <span class="day-num">${day.getDate()}</span>
+        <span class="dots">${dots}</span>
+      `;
+      row.appendChild(cell);
+    }
+
+    monthGridEl.appendChild(row);
+  }
+}
+
+// ---------------- 周视图 ----------------
+
+function buildTimeGutter() {
+  for (let hour = 0; hour < 24; hour++) {
+    const label = document.createElement("span");
+    label.className = "hour-label";
+    label.style.top = `${hour * HOUR_HEIGHT + 3}px`;
+    label.textContent = `${pad2(hour)}:00`;
+    gutterEl.appendChild(label);
+  }
+}
+
+function buildWeekHeader(weekStart) {
+  headerEl.querySelectorAll(".day-head").forEach((el) => el.remove());
+
+  const todayKey = dateKey(today);
 
   cornerEl.innerHTML = `
     <span class="corner-month">${weekStart.getMonth() + 1}月</span>
@@ -85,23 +183,16 @@ function renderHeader(weekStart) {
   }
 }
 
-function buildTimeGutter() {
-  for (let hour = 0; hour < 24; hour++) {
-    const label = document.createElement("span");
-    label.className = "hour-label";
-    label.style.top = `${hour * HOUR_HEIGHT + 3}px`;
-    label.textContent = `${pad2(hour)}:00`;
-    gutterEl.appendChild(label);
-  }
-}
+function buildWeekColumns(weekStart) {
+  bodyEl.querySelectorAll(".day-column").forEach((el) => el.remove());
 
-function buildDayColumns(weekStart) {
-  const todayKey = dateKey(new Date());
+  const todayKey = dateKey(today);
 
   for (let i = 0; i < 7; i++) {
     const day = addDays(weekStart, i);
     const column = document.createElement("div");
-    column.className = "day-column" + (dateKey(day) === todayKey ? " is-today" : "");
+    column.className = "day-column";
+    if (dateKey(day) === todayKey) column.classList.add("is-today");
 
     const fragment = document.createDocumentFragment();
     for (let slot = 0; slot < TOTAL_SLOTS; slot++) {
@@ -114,10 +205,8 @@ function buildDayColumns(weekStart) {
   }
 }
 
-function renderEvents(events, weekStart) {
-  const dayKeys = [];
-  for (let i = 0; i < 7; i++) dayKeys.push(dateKey(addDays(weekStart, i)));
-
+function renderWeekEvents(weekStart) {
+  const dayKeys = weekDayKeys(weekStart);
   const columns = bodyEl.querySelectorAll(".day-column");
 
   for (const event of events) {
@@ -155,8 +244,10 @@ function renderEvents(events, weekStart) {
   }
 }
 
-function autoScroll(events) {
+function scrollToWeekEvents(weekStart) {
+  const dayKeys = weekDayKeys(weekStart);
   const starts = events
+    .filter((event) => dayKeys.includes(String(event.date ?? "").slice(0, 10)))
     .map((event) => minutesOfDay(event.start_time))
     .filter((minutes) => minutes !== null);
 
@@ -164,26 +255,63 @@ function autoScroll(events) {
   scrollEl.scrollTop = Math.max(0, toPx(focusMinute) - HOUR_HEIGHT);
 }
 
-// ---------------- 启动 ----------------
+function formatWeekRange(weekStart) {
+  const end = addDays(weekStart, 6);
+  const sameMonth =
+    weekStart.getFullYear() === end.getFullYear() &&
+    weekStart.getMonth() === end.getMonth();
+  const endText = sameMonth
+    ? `${end.getDate()}日`
+    : `${end.getFullYear()}年${end.getMonth() + 1}月${end.getDate()}日`;
 
-async function init() {
-  const weekStart = WEEK_START;
+  return `${weekStart.getFullYear()}年${weekStart.getMonth() + 1}月${weekStart.getDate()}日 – ${endText}`;
+}
 
-  renderHeader(weekStart);
-  buildTimeGutter();
-  buildDayColumns(weekStart);
+function openWeek(weekStart) {
+  monthViewEl.hidden = true;
+  weekViewEl.hidden = false;
 
-  let events = [];
+  weekRangeEl.textContent = formatWeekRange(weekStart);
+
+  buildWeekHeader(weekStart);
+  buildWeekColumns(weekStart);
+  renderWeekEvents(weekStart);
+  scrollToWeekEvents(weekStart);
+}
+
+// ---------------- 数据与启动 ----------------
+
+async function loadEvents() {
   try {
     const res = await fetch(`${API_BASE}/events`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     events = await res.json();
-    renderEvents(events, weekStart);
+    buildMonthGrid(); // 数据到达后刷新红点
   } catch (err) {
     showStatus(`加载日程失败：${err.message}`);
   }
+}
 
-  autoScroll(events);
+function init() {
+  buildTimeGutter();
+  buildMonthGrid();
+
+  prevMonthBtn.addEventListener("click", () => {
+    viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() - 1, 1);
+    buildMonthGrid();
+  });
+
+  nextMonthBtn.addEventListener("click", () => {
+    viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1);
+    buildMonthGrid();
+  });
+
+  backBtn.addEventListener("click", () => {
+    weekViewEl.hidden = true;
+    monthViewEl.hidden = false;
+  });
+
+  loadEvents();
 }
 
 init();

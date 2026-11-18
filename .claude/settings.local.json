@@ -15,7 +15,17 @@
       "Bash(netstat -ano)",
       "Bash(cmd //c start.bat)",
       "Bash(curl -s -m 5 http://127.0.0.1:8000/api/health)",
-      "Bash(cmd //c \"D:\\\\\\\\Agenda\\\\\\\\start.bat\")"
+      "Bash(cmd //c \"D:\\\\\\\\Agenda\\\\\\\\start.bat\")",
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless=new --disable-gpu --window-size=1200,900 --virtual-time-budget=4000 --screenshot=\"D:/Agenda/preview-month.png\" \"http://127.0.0.1:8000/\")",
+      "Bash(taskkill //PID 13072 //F)",
+      "Bash(tasklist)",
+      "Bash(tasklist //FI \"PID eq 13072\")",
+      "Bash(tasklist //FI \"PID eq 13300\")",
+      "Bash(wmic process *)",
+      "Bash(tskill 13300)",
+      "Bash(powershell -NoProfile -Command \"Get-NetTCPConnection -LocalPort 8000 -State Listen | Select-Object -Property LocalAddress,LocalPort,OwningProcess | Format-List; Get-CimInstance Win32_Process -Filter 'ProcessId=13300' | Select-Object ProcessId,Name,CommandLine | Format-List; Get-Process -Id 13072 -ErrorAction SilentlyContinue | Select-Object Id,ProcessName,Path | Format-List\")",
+      "Bash(taskkill //F //PID 13300)",
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless=new --disable-gpu --window-size=1200,900 --virtual-time-budget=5000 --screenshot=\"D:/Agenda/preview-week.png\" \"http://127.0.0.1:8000/static/_week-test.html\")"
     ]
   }
 }

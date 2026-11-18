@@ -7,9 +7,10 @@
   --accent: #2563eb;
   --accent-soft: #dbeafe;
   --accent-ink: #1e3a8a;
+  --dot: #ef4444;
 
-  --gutter-w: 64px;                      /* 左侧时间轴宽度 */
-  --cell-h: 6px;                         /* 每个 5 分钟格子的高度 */
+  --gutter-w: 64px;                      /* 周视图左侧时间轴宽度 */
+  --cell-h: 6px;                         /* 周视图每个 5 分钟格子的高度 */
   --hour-h: calc(var(--cell-h) * 12);    /* 一小时 = 12 格 */
 }
 
@@ -30,7 +31,11 @@ body {
   line-height: 1.4;
 }
 
-.calendar {
+[hidden] {
+  display: none !important;
+}
+
+.app {
   height: 100%;
   max-width: 1120px;
   margin: 0 auto;
@@ -39,7 +44,14 @@ body {
   flex-direction: column;
 }
 
-.calendar-card {
+.view {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.card {
   flex: 1;
   min-height: 0;
   display: flex;
@@ -51,14 +63,179 @@ body {
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
 }
 
+/* ---------------- 月视图 ---------------- */
+
+.month-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+}
+
+.month-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.month-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: #fbfcfd;
+}
+
+.month-weekdays span {
+  padding: 7px 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.month-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-auto-rows: 1fr;
+}
+
+/* 每一行是一周（周日 → 周六），整行可点击进入周视图 */
+.month-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.month-week:last-child {
+  border-bottom: none;
+}
+
+.month-week:hover {
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.month-week:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.month-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border-left: 1px solid var(--border);
+  min-width: 0;
+}
+
+.month-day:first-child {
+  border-left: none;
+}
+
+/* 日期 + 下方预留的圆点位置 */
+.day-num {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.month-day.is-outside .day-num {
+  color: #c2c7d0;
+  font-weight: 400;
+}
+
+.month-day.is-today .day-num {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50%;
+}
+
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  height: 6px;   /* 始终占位，保证有无日程时高度一致 */
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--dot);
+}
+
+.month-hint {
+  margin: 0;
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+}
+
+/* ---------------- 周视图 ---------------- */
+
+.week-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.pill-btn {
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pill-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.week-range {
+  font-size: 13px;
+  color: var(--muted);
+}
+
 .calendar-scroll {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   scrollbar-gutter: stable;
 }
-
-/* ---------------- 顶部：月份 + 周日至周六 ---------------- */
 
 .cal-header {
   position: sticky;
@@ -123,8 +300,6 @@ body {
   color: #fff;
 }
 
-/* ---------------- 时间轴 + 7 天网格 ---------------- */
-
 .cal-body {
   display: grid;
   grid-template-columns: var(--gutter-w) repeat(7, minmax(0, 1fr));
@@ -162,8 +337,6 @@ body {
 .slot--hour {
   box-shadow: inset 0 1px 0 var(--border);
 }
-
-/* ---------------- 日程块 ---------------- */
 
 .event {
   position: absolute;
