@@ -1,7 +1,7 @@
 -- 日程表数据表（字段来源：data.txt）
 -- 文本存储约定：
 --   date       -> 'YYYY-MM-DD'
---   start_time -> 'HH:MM:SS'（可空，表示全天日程）
+--   start_time -> 'YYYY-MM-DD HH:MM:SS'（可空，表示全天日程）
 -- created_at / updated_at 为 UTC 时间，由数据库自动维护
 CREATE TABLE IF NOT EXISTS events (
     id          INTEGER     PRIMARY KEY AUTOINCREMENT,

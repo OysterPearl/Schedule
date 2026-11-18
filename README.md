@@ -26,18 +26,43 @@ Agenda/
 
 ## 运行（需 Python 3.10+）
 
+### 方式一：Windows 双击启动（推荐）
+
+直接双击项目根目录的 `start.bat`，然后浏览器打开 <http://127.0.0.1:8000>。
+脚本会自动进入 `backend`、检查虚拟环境并安装依赖（首次）、启动服务。
+
+### 方式二：命令行
+
+```bash
+cd backend
+.venv/Scripts/python.exe -m uvicorn app.main:app --reload
+```
+
+如果虚拟环境不存在（首次运行）：
+
 ```bash
 cd backend
 python -m venv .venv
-source .venv/Scripts/activate     # Windows Git Bash；PowerShell 用 .venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+.venv/Scripts/python.exe -m pip install -r requirements.txt
+.venv/Scripts/python.exe -m uvicorn app.main:app --reload
 ```
+
+不需要激活虚拟环境，直接调用 venv 里的 python，可避开 PowerShell 执行策略问题。
 
 - 页面：<http://127.0.0.1:8000>
 - 交互式 API 文档：<http://127.0.0.1:8000/docs>
 
 首次启动会自动创建 `backend/data/agenda.db`。
+
+### 常见启动问题
+
+| 现象 | 原因 / 解决 |
+| --- | --- |
+| `uvicorn` 不是内部或外部命令 | 没激活虚拟环境或没装依赖，改用 `.venv\Scripts\python.exe -m uvicorn ...` 或 `start.bat` |
+| `Could not import module "app.main"` | 不在 `backend` 目录，先 `cd backend` 再执行 |
+| PowerShell 提示无法加载 `Activate.ps1` | 不需要激活，直接调用 `.venv\Scripts\python.exe` |
+| 直接双击 `frontend/index.html` 一片空白 | 页面必须经后端访问，请用 <http://127.0.0.1:8000> |
+| 8000 端口被占用 | 换端口：`--port 8001`，并访问对应端口 |
 
 ## API
 
@@ -50,9 +75,11 @@ uvicorn app.main:app --reload
 | PUT | `/api/events/{id}` | 更新（只传要改的字段） |
 | DELETE | `/api/events/{id}` | 删除 |
 
+> 注意：当前 `/api/events` 列表接口返回 `backend/app/routers/events.py` 中写死的 mock 数据（`USE_MOCK_DATA`），暂未读写数据库。
+
 字段约定：
-- `date`：`YYYY-MM-DD`
-- `start_time` / `end_time`：`HH:MM`（可空，表示全天日程）
+- `date`：`YYYY-MM-DD`，决定日程落在周视图的哪一列
+- `start_time` / `end_time`：完整时间戳，如 `2026-11-18 18:00:00`（可空，表示全天日程）
 - `created_at` / `updated_at`：SQLite 生成的 UTC 时间，由服务端维护
 
 ## 开发建议 / 后续可做

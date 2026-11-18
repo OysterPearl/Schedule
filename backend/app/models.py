@@ -1,5 +1,5 @@
 from datetime import date as Date
-from datetime import datetime, time as Time
+from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -12,8 +12,8 @@ class EventBase(BaseModel):
     date: Date = Field(description="日期，格式 YYYY-MM-DD")
     title: str = Field(min_length=1, max_length=200)
     location: str | None = Field(default=None, max_length=200)
-    start_time: Time | None = Field(default=None, description="开始时间 HH:MM，可空表示全天")
-    end_time: Time | None = Field(default=None, description="结束时间 HH:MM")
+    start_time: datetime | None = Field(default=None, description="开始时间，如 2026-11-18 18:00:00")
+    end_time: datetime | None = Field(default=None, description="结束时间，如 2026-11-18 19:25:00")
     remark: str | None = None
 
 
@@ -29,8 +29,8 @@ class EventUpdate(BaseModel):
     date: Date | None = None
     title: str | None = Field(default=None, min_length=1, max_length=200)
     location: str | None = Field(default=None, max_length=200)
-    start_time: Time | None = None
-    end_time: Time | None = None
+    start_time: datetime | None = None
+    end_time: datetime | None = None
     remark: str | None = None
 
 

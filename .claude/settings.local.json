@@ -3,7 +3,19 @@
     "allow": [
       "Bash(python -m venv .venv)",
       "Bash(.venv/Scripts/python.exe -m pip install -q -r requirements.txt httpx)",
-      "Bash(.venv/Scripts/python.exe -m pip list)"
+      "Bash(.venv/Scripts/python.exe -m pip list)",
+      "Bash(.venv/Scripts/python.exe -)",
+      "Read(//c/Program Files \\\\\\(x86\\\\\\)/Microsoft/Edge/Application/**)",
+      "Read(//c/Program Files/Google/Chrome/Application/**)",
+      "Bash(.venv/Scripts/python.exe -m uvicorn app.main:app --port 8000)",
+      "Bash(curl -s http://127.0.0.1:8000/api/health)",
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless=new --disable-gpu --hide-scrollbars --window-size=1200,900 --screenshot=\"D:/Agenda/preview.png\" \"http://127.0.0.1:8000/\")",
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless=new --disable-gpu --window-size=1200,900 --screenshot=\"D:/Agenda/preview.png\" \"http://127.0.0.1:8000/\")",
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless=new --disable-gpu --window-size=800,300 --screenshot=\"D:/Agenda/preview-file.png\" \"file:///D:/Agenda/frontend/index.html\")",
+      "Bash(netstat -ano)",
+      "Bash(cmd //c start.bat)",
+      "Bash(curl -s -m 5 http://127.0.0.1:8000/api/health)",
+      "Bash(cmd //c \"D:\\\\\\\\Agenda\\\\\\\\start.bat\")"
     ]
   }
 }

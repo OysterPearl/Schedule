@@ -3,25 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agenda · 日程表</title>
+  <title>Agenda · 周视图</title>
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-  <header class="app-header">
-    <h1>Agenda 日程表</h1>
-    <p class="subtitle">项目框架已就绪，页面与功能开发中…</p>
-  </header>
+  <script>
+    // 页面必须由后端提供（/static 与 /api 都依赖后端），
+    // 直接双击打开 index.html 时给出提示，避免出现空白页。
+    if (location.protocol === "file:") {
+      document.body.innerHTML =
+        '<p style="font: 15px/1.6 system-ui, sans-serif; padding: 32px;">' +
+        "请先启动后端，再通过 <b>http://127.0.0.1:8000</b> 访问本页面（不要直接打开 index.html）。" +
+        "</p>";
+    }
+  </script>
 
-  <main>
-    <section class="toolbar">
-      <button id="refresh-btn" class="btn">刷新</button>
-      <span id="status" class="status"></span>
-    </section>
-
-    <section id="event-list" class="event-list">
-      <p class="empty">暂无日程</p>
-    </section>
+  <main class="calendar">
+    <div class="calendar-card">
+      <div class="calendar-scroll" id="calendar-scroll">
+        <!-- 顶部：左上是月份，其余是周日～周六（JS 生成） -->
+        <div class="cal-header" id="cal-header">
+          <div class="corner" id="corner"></div>
+        </div>
+        <!-- 主体：最左时间轴 + 7 个日列（JS 生成 24h × 每 5min 的网格） -->
+        <div class="cal-body" id="cal-body">
+          <div class="time-gutter" id="time-gutter"></div>
+        </div>
+      </div>
+    </div>
   </main>
+
+  <div class="status" id="status" hidden></div>
 
   <script src="/static/js/app.js"></script>
 </body>

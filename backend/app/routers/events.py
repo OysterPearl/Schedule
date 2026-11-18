@@ -13,6 +13,26 @@ FIELDS = ("date", "title", "location", "start_time", "end_time", "remark")
 
 EVENT_NOT_FOUND = "日程不存在"
 
+# ---------------------------------------------------------------------------
+# 临时：前端联调阶段写死的数据，暂不读写数据库。
+# 接入真实数据后把 USE_MOCK_DATA 改为 False，并删除 MOCK_EVENTS。
+# ---------------------------------------------------------------------------
+USE_MOCK_DATA = True
+
+MOCK_EVENTS = [
+    {
+        "id": 1,
+        "date": "2026-11-18",
+        "title": "test",
+        "location": "location",
+        "start_time": "2026-11-18 18:00:00",
+        "end_time": "2026-11-18 19:25:00",
+        "created_at": "2026-11-18 00:00:00",
+        "updated_at": "2026-11-18 00:00:00",
+        "remark": "test",
+    }
+]
+
 
 def _to_db(value):
     """把 date/time 转成 SQLite 存储的文本格式（ISO）。"""
@@ -33,6 +53,9 @@ def list_events(
     end: Date | None = Query(default=None, alias="to", description="结束日期（含）"),
     db: sqlite3.Connection = Depends(get_db),
 ):
+    if USE_MOCK_DATA:
+        return MOCK_EVENTS
+
     where: list[str] = []
     params: list[str] = []
 
