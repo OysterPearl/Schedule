@@ -47,8 +47,14 @@
     <!-- 周视图 -->
     <section id="week-view" class="view" hidden>
       <div class="week-toolbar">
-        <button id="back-to-month" class="pill-btn" type="button">‹ 月视图</button>
+        <div class="week-toolbar-side">
+          <button id="back-to-month" class="pill-btn" type="button">‹ 月视图</button>
+          <button id="prev-week" class="icon-btn" type="button" aria-label="上一周" title="上一周">‹</button>
+        </div>
         <span class="week-range" id="week-range"></span>
+        <div class="week-toolbar-side week-toolbar-side--end">
+          <button id="next-week" class="icon-btn" type="button" aria-label="下一周" title="下一周">›</button>
+        </div>
       </div>
 
       <div class="card">

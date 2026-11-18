@@ -13,7 +13,9 @@
 ```
 Agenda/
 ├── data.txt                 # 字段定义（数据表结构来源）
+├── start.bat                # Windows 一键启动
 ├── backend/                 # FastAPI 后端
+│   ├── run.py               # 开发入口（自动重载）
 │   ├── app/
 │   │   ├── main.py          # 应用入口（/api 接口 + 托管前端页面）
 │   │   ├── config.py        # 路径配置
@@ -37,11 +39,13 @@ Agenda/
 直接双击项目根目录的 `start.bat`，然后浏览器打开 <http://127.0.0.1:8000>。
 脚本会自动进入 `backend`、检查虚拟环境并安装依赖（首次）、启动服务。
 
+启动后**修改 `backend/app/` 下的代码会自动重启服务**；修改前端页面只需刷新浏览器。
+
 ### 方式二：命令行
 
 ```bash
 cd backend
-.venv/Scripts/python.exe -m uvicorn app.main:app --reload
+.venv/Scripts/python.exe run.py
 ```
 
 如果虚拟环境不存在（首次运行）：
@@ -50,10 +54,10 @@ cd backend
 cd backend
 python -m venv .venv
 .venv/Scripts/python.exe -m pip install -r requirements.txt
-.venv/Scripts/python.exe -m uvicorn app.main:app --reload
+.venv/Scripts/python.exe run.py
 ```
 
-不需要激活虚拟环境，直接调用 venv 里的 python，可避开 PowerShell 执行策略问题。
+`run.py` 内置 `reload=True`，不需要额外加参数。不需要激活虚拟环境，直接调用 venv 里的 python，可避开 PowerShell 执行策略问题。
 
 - 页面：<http://127.0.0.1:8000>
 - 交互式 API 文档：<http://127.0.0.1:8000/docs>
@@ -64,7 +68,7 @@ python -m venv .venv
 
 | 现象 | 原因 / 解决 |
 | --- | --- |
-| `uvicorn` 不是内部或外部命令 | 没激活虚拟环境或没装依赖，改用 `.venv\Scripts\python.exe -m uvicorn ...` 或 `start.bat` |
+| `uvicorn` 不是内部或外部命令 | 没激活虚拟环境或没装依赖，改用 `.venv\Scripts\python.exe run.py` 或 `start.bat` |
 | `Could not import module "app.main"` | 不在 `backend` 目录，先 `cd backend` 再执行 |
 | PowerShell 提示无法加载 `Activate.ps1` | 不需要激活，直接调用 `.venv\Scripts\python.exe` |
 | 直接双击 `frontend/index.html` 一片空白 | 页面必须经后端访问，请用 <http://127.0.0.1:8000> |

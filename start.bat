@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-rem Agenda - start the FastAPI backend (serves both API and frontend)
+rem Agenda - start the FastAPI backend (serves API + frontend, auto-reload on code changes)
 cd /d "%~dp0backend"
 
 if not exist ".venv\Scripts\python.exe" (
@@ -14,10 +14,10 @@ if not exist ".venv\Scripts\python.exe" (
 )
 
 echo.
-echo Starting Agenda at http://127.0.0.1:8000
+echo Starting Agenda at http://127.0.0.1:8000 (auto-reload enabled)
 echo Press Ctrl+C to stop.
 echo.
-".venv\Scripts\python.exe" -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+".venv\Scripts\python.exe" run.py
 if errorlevel 1 goto :error
 
 exit /b 0
